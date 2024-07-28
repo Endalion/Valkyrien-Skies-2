@@ -2,7 +2,6 @@ package org.valkyrienskies.mod.common.item;
 
 import net.minecraft.Util
 import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.TextComponent
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.Item
@@ -33,7 +32,7 @@ class ShipGroupNoCollisionItem(properties: Properties) : Item(properties) {
                             ColliisionPairSavedData.remove(shipID, ship.id)
                         }
                         nbt.putLongArray("Ships", ships.filter { id -> id != ship.id })
-                        ctx.player?.sendMessage(TextComponent("Removed NoCollision"), Util.NIL_UUID)
+                        ctx.player?.sendSystemMessage(Component.literal("Removed NoCollision"))
 
                     } else if (ctx.player?.isCrouching == false) {
                         ships.forEach { shipID ->
@@ -41,11 +40,11 @@ class ShipGroupNoCollisionItem(properties: Properties) : Item(properties) {
                             ColliisionPairSavedData.add(shipID, ship.id)
                         }
                         nbt.putLongArray("Ships", ships + ship.id)
-                        ctx.player?.sendMessage(TextComponent("Activated NoCollision"), Util.NIL_UUID)
+                        ctx.player?.sendSystemMessage(Component.literal("Activated NoCollision"))
                     }
                 } else {
                     nbt.putLongArray("Ships", longArrayOf(ship.id))
-                    ctx.player?.sendMessage(TextComponent("Selected First Ship"), Util.NIL_UUID)
+                    ctx.player?.sendSystemMessage(Component.literal("Selected First Ship"))
                 }
             }
         }
@@ -63,7 +62,7 @@ class ShipGroupNoCollisionItem(properties: Properties) : Item(properties) {
             ships.forEach { id ->
                 string += ("$id, ")
             }
-            list.add(TextComponent("Ships Contained: [ $string ]"))
+            list.add(Component.literal("Ships Contained: [ $string ]"))
         }
     }
 }

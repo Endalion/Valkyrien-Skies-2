@@ -1,9 +1,8 @@
 package org.valkyrienskies.mod.forge.common
 
-import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.level.Level
-import net.minecraftforge.event.world.WorldEvent
+import net.minecraftforge.event.level.LevelEvent
 import net.minecraftforge.eventbus.api.EventPriority
 import net.minecraftforge.eventbus.api.SubscribeEvent
 import net.minecraftforge.fml.common.Mod
@@ -16,10 +15,10 @@ import org.valkyrienskies.mod.common.ValkyrienSkiesMod
 class WorldEvents {
     companion object {
         @JvmStatic @SubscribeEvent
-        fun onWorldLoad(event: WorldEvent.Load) {
-            if (event.phase == EventPriority.NORMAL && event.world is ServerLevel &&
-                (event.world as ServerLevel).dimension() == Level.OVERWORLD) {
-                ColliisionPairSavedData.load(event.world as ServerLevel)
+        fun onWorldLoad(event: LevelEvent.Load) {
+            if (event.phase == EventPriority.NORMAL && event.level is ServerLevel &&
+                (event.level as ServerLevel).dimension() == Level.OVERWORLD) {
+                ColliisionPairSavedData.load(event.level as ServerLevel)
             }
         }
     }

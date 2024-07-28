@@ -2,7 +2,6 @@ package org.valkyrienskies.mod.common.item;
 
 import net.minecraft.Util
 import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.TextComponent
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.Item
@@ -30,16 +29,16 @@ class ShipPairNoCollisionItem(properties: Properties) : Item(properties) {
                     if (ctx.player?.isCrouching == true) {
                         level.shipObjectWorld.enableCollisionBetweenBodies(id1, ship.id)
                         ColliisionPairSavedData.remove(id1, ship.id)
-                        ctx.player?.sendMessage(TextComponent("Removed NoCollision"), Util.NIL_UUID)
+                        ctx.player?.sendSystemMessage(Component.literal("Removed NoCollision"))
                     } else {
                         level.shipObjectWorld.disableCollisionBetweenBodies(id1, ship.id)
                         ColliisionPairSavedData.add(id1, ship.id)
-                        ctx.player?.sendMessage(TextComponent("Activated NoCollision"), Util.NIL_UUID)
+                        ctx.player?.sendSystemMessage(Component.literal("Activated NoCollision"))
                     }
                     nbt.remove("FirstShip")
                 } else {
                     nbt.putLong("FirstShip", ship.id)
-                    ctx.player?.sendMessage(TextComponent("Selected First Ship"), Util.NIL_UUID)
+                    ctx.player?.sendSystemMessage(Component.literal("Selected First Ship"))
                 }
             }
         }
@@ -51,6 +50,6 @@ class ShipPairNoCollisionItem(properties: Properties) : Item(properties) {
         tooltipFlag: TooltipFlag) {
         super.appendHoverText(itemStack, level, list, tooltipFlag)
         val nbt = itemStack.orCreateTag
-        if (nbt.contains("FirstShip")) list.add(TextComponent("First ID: " + nbt.getLong("FirstShip").toString()))
+        if (nbt.contains("FirstShip")) list.add(Component.literal("First ID: " + nbt.getLong("FirstShip").toString()))
     }
 }
