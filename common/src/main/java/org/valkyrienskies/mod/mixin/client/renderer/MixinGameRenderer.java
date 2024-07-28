@@ -235,7 +235,7 @@ public abstract class MixinGameRenderer {
         final long finishTimeNano, final PoseStack matrixStack) {
 
         final ClientLevel clientLevel = minecraft.level;
-        final Entity player = minecraft.player;
+        final Entity player = minecraft.getCameraEntity();
         if (clientLevel == null || player == null) {
             prepareCullFrustum.call(instance, matrixStack, vec3, matrix4f);
             return;
