@@ -114,7 +114,8 @@ fun MinecraftServer.getLevelFromDimensionId(dimensionId: DimensionId): ServerLev
 val Minecraft.shipObjectWorld get() = (this as IShipObjectWorldClientProvider).shipObjectWorld ?: vsCore.dummyShipWorldClient
 val ClientLevel?.shipObjectWorld get() = Minecraft.getInstance().shipObjectWorld
 
-val IPlayer.mcPlayer: Player get() = (this as MinecraftPlayer).playerEntityReference.get()!!
+// TODO: There's a potential crash from this returning a null to VSForgeNetworking
+val IPlayer.mcPlayer: Player? get() = (this as MinecraftPlayer).playerEntityReference.get()
 
 val Player.playerWrapper get() = (this as PlayerDuck).vs_getPlayer()
 
@@ -445,5 +446,10 @@ fun getShipMountedToData(passenger: Entity, partialTicks: Float? = null): ShipMo
 }
 
 fun getShipMountedTo(entity: Entity): LoadedShip? {
-    return getShipMountedToData(entity)?.shipMountedTo
+    // return getShipMountedToData(entity)?.shipMountedTo
+    val vehicle = entity.vehicle ?: return null
+    if (vehicle is ShipMountedToDataProvider) {
+        return vehicle.provideShipMountedToData(entity, null)?.shipMountedTo
+    }
+    return entity.level.getShipObjectManagingPos(vehicle.position().toJOML())
 }

@@ -46,10 +46,12 @@ object VSForgeNetworking {
     }
 
     fun sendToClient(data: ByteBuf, player: IPlayer) {
-        vsForgeChannel.send(
-            PacketDistributor.PLAYER.with { player.mcPlayer as ServerPlayer },
-            MessageVSPacket(data)
-        )
+        player.mcPlayer?.let {
+            vsForgeChannel.send(
+                PacketDistributor.PLAYER.with { it as ServerPlayer },
+                MessageVSPacket(data)
+            )
+        }
     }
 
     fun sendToServer(data: ByteBuf) {
