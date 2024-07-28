@@ -451,5 +451,5 @@ fun getShipMountedTo(entity: Entity): LoadedShip? {
     if (vehicle is ShipMountedToDataProvider) {
         return vehicle.provideShipMountedToData(entity, null)?.shipMountedTo
     }
-    return entity.level.getShipObjectManagingPos(vehicle.position().toJOML())
+    return entity.level().getShipObjectManagingPos(vehicle.position().toJOML())
 }
