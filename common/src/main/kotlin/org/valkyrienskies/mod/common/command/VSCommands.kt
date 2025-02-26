@@ -49,17 +49,21 @@ object VSCommands {
     private const val TELEPORT_FIRST_ARG_CAN_ONLY_INPUT_1_SHIP = "command.valkyrienskies.mc_teleport.can_only_teleport_to_one_ship"
 
     private fun literal(name: String) =
-        LiteralArgumentBuilder.literal<VSCommandSource>(name)
+        literalPermissive(name)
+            .requires { (it as CommandSourceStack).hasPermission(VSGameConfig.SERVER.vsCommandPerms) }
 
     private fun <T> argument(name: String, type: ArgumentType<T>) =
         RequiredArgumentBuilder.argument<VSCommandSource, T>(name, type)
+            .requires { (it as CommandSourceStack).hasPermission(VSGameConfig.SERVER.vsCommandPerms) }
+
+    private fun literalPermissive(name: String) =
+        LiteralArgumentBuilder.literal<VSCommandSource>(name)
 
     fun registerServerCommands(dispatcher: CommandDispatcher<CommandSourceStack>) {
         dispatcher as CommandDispatcher<VSCommandSource>
 
         dispatcher.register(
-            literal("vs")
-                .requires{(it as CommandSourceStack).hasPermission(VSGameConfig.SERVER.vsCommandPerms)}
+            literalPermissive("vs")
                 .then(literal("delete").then(argument("ships", ShipArgument.ships()).executes {
                     try {
                         val r = ShipArgument.getShips(it, "ships").toList() as List<ServerShip>
@@ -253,7 +257,7 @@ object VSCommands {
                         )
                     )
                 )
-                .then(literal("get-ship").executes {
+                .then(literalPermissive("get-ship").executes {
                     try {
                         val mcCommandContext = it as CommandContext<CommandSourceStack>
 
