@@ -3,7 +3,6 @@ package org.valkyrienskies.mod.common.command
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.ArgumentType
 import com.mojang.brigadier.arguments.BoolArgumentType
-import com.mojang.brigadier.arguments.DoubleArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
@@ -14,7 +13,6 @@ import net.minecraft.commands.arguments.EntityArgument
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument
 import net.minecraft.commands.arguments.coordinates.Vec3Argument
 import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.Component.translatable
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.phys.BlockHitResult
 import org.joml.Vector3d
@@ -28,7 +26,6 @@ import org.valkyrienskies.core.impl.game.ships.ShipObject
 import org.valkyrienskies.core.util.x
 import org.valkyrienskies.core.util.y
 import org.valkyrienskies.core.util.z
-import org.valkyrienskies.mod.common.dimensionId
 import org.valkyrienskies.mod.common.getShipManagingPos
 import org.valkyrienskies.mod.common.util.toJOML
 import org.valkyrienskies.mod.common.util.toJOMLD
@@ -46,18 +43,24 @@ object VSCommands {
     private const val GET_SHIP_ONLY_USABLE_BY_ENTITIES_MESSAGE = "command.valkyrienskies.get_ship.only_usable_by_entities"
     private const val TELEPORTED_MULTIPLE_SHIPS_SUCCESS = "command.valkyrienskies.teleport.multiple_ship_success"
     private const val TELEPORT_FIRST_ARG_CAN_ONLY_INPUT_1_SHIP = "command.valkyrienskies.mc_teleport.can_only_teleport_to_one_ship"
+    private const val REQUIRED_PERMISSION = 2
 
     private fun literal(name: String) =
-        LiteralArgumentBuilder.literal<VSCommandSource>(name)
+        literalPermissive(name)
+            .requires { (it as CommandSourceStack).hasPermission(REQUIRED_PERMISSION) }
 
     private fun <T> argument(name: String, type: ArgumentType<T>) =
         RequiredArgumentBuilder.argument<VSCommandSource, T>(name, type)
+            .requires { (it as CommandSourceStack).hasPermission(REQUIRED_PERMISSION) }
+
+    private fun literalPermissive(name: String) =
+        LiteralArgumentBuilder.literal<VSCommandSource>(name)
 
     fun registerServerCommands(dispatcher: CommandDispatcher<CommandSourceStack>) {
         dispatcher as CommandDispatcher<VSCommandSource>
 
         dispatcher.register(
-            literal("vs")
+            literalPermissive("vs")
                 .then(literal("delete").then(argument("ships", ShipArgument.ships()).executes {
                     try {
                         val r = ShipArgument.getShips(it, "ships").toList() as List<ServerShip>
@@ -251,7 +254,7 @@ object VSCommands {
                         )
                     )
                 )
-                .then(literal("get-ship").executes {
+                .then(literalPermissive("get-ship").executes {
                     try {
                         val mcCommandContext = it as CommandContext<CommandSourceStack>
 
