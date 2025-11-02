@@ -14,6 +14,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.valkyrienskies.mod.compat.shader.IVsRenderWithOverlay;
+import org.valkyrienskies.mod.compat.shader.VsShipShaderOverlays;
 import org.valkyrienskies.mod.mixinducks.mod_compat.sodium.RenderSectionManagerDuck;
 
 @Mixin(value = RenderSectionManager.class, remap = false)
@@ -27,6 +29,8 @@ public class MixinRenderSectionManager {
         method = "renderLayer")
     private void redirectRenderLayer(final CommandList list, final ChunkRenderMatrices matrices,
         final TerrainRenderPass pass, final double camX, final double camY, final double camZ) {
+        // TODO: How to modify sodium terrain shader?
+        // ANS: It is very hard.
 
         ((RenderSectionManagerDuck) this).vs_getShipRenderLists().forEach((ship, renderList) -> {
             final Vector3dc center = ship.getRenderTransform().getPositionInShip();
@@ -37,10 +41,17 @@ public class MixinRenderSectionManager {
                     s.m21(), s.m22(), s.m23(), s.m30(), s.m31(), s.m32(), s.m33())
                 .translate(center.x(), center.y(), center.z());
 
+
             final ChunkRenderMatrices newMatrices =
                 new ChunkRenderMatrices(matrices.projection(), new Matrix4f(newModelView));
             chunkRenderer.render(newMatrices, list, renderList, pass,
                 new CameraTransform(center.x(), center.y(), center.z()));
+
+            VsShipShaderOverlays.processAllOverlays(ship).ifPresent(overlayData ->
+                ((IVsRenderWithOverlay)chunkRenderer).vs2$renderOverlay(overlayData, newMatrices, list, renderList, pass,
+                    new CameraTransform(center.x(), center.y(), center.z())
+                )
+            );
             list.close();
         });
     }

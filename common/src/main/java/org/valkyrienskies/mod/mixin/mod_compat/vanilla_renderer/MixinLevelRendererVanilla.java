@@ -10,6 +10,7 @@ import com.mojang.blaze3d.vertex.VertexBuffer;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import java.util.ListIterator;
+import java.util.Optional;
 import java.util.WeakHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -41,6 +42,8 @@ import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.hooks.VSGameEvents;
 import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
 import org.valkyrienskies.mod.compat.VSRenderer;
+import org.valkyrienskies.mod.compat.shader.VsShipShaderOverlays;
+import org.valkyrienskies.mod.compat.shader.VsShaderChunkOverlay.ShipShaderOverlayData;
 import org.valkyrienskies.mod.mixin.ValkyrienCommonMixinConfigPlugin;
 import org.valkyrienskies.mod.mixin.accessors.client.render.ViewAreaAccessor;
 import org.valkyrienskies.mod.mixin.mod_compat.optifine.RenderChunkInfoAccessorOptifine;
@@ -181,7 +184,7 @@ public abstract class MixinLevelRendererVanilla {
             );
 
             VSGameEvents.INSTANCE.getRenderShip().emit(event);
-            renderChunkLayer(renderType, poseStack, center.x(), center.y(), center.z(), matrix4f, chunks);
+            renderChunkLayer(ship, renderType, poseStack, center.x(), center.y(), center.z(), matrix4f, chunks);
             VSGameEvents.INSTANCE.getPostRenderShip().emit(event);
 
             poseStack.popPose();
@@ -199,7 +202,7 @@ public abstract class MixinLevelRendererVanilla {
         return (ObjectArrayList<RenderChunkInfo>) renderChunksGeneratedByVanilla;
     }
 
-    private void renderChunkLayer(final RenderType renderType, final PoseStack poseStack, final double d,
+    private void renderChunkLayer(final ClientShip ship, final RenderType renderType, final PoseStack poseStack, final double d,
         final double e, final double f,
         final Matrix4f matrix4f, final ObjectList<RenderChunkInfo> chunksToRender) {
         RenderSystem.assertOnRenderThread();
@@ -211,6 +214,8 @@ public abstract class MixinLevelRendererVanilla {
         boolean bl = renderType != RenderType.translucent();
         final ListIterator objectListIterator = chunksToRender.listIterator(bl ? 0 : chunksToRender.size());
         ShaderInstance shaderInstance = RenderSystem.getShader();
+
+        Optional<ShipShaderOverlayData> overrideData = VsShipShaderOverlays.processAllOverlays(ship);
 
         for(int k = 0; k < 12; ++k) {
             int l = RenderSystem.getShaderTexture(k);
@@ -227,6 +232,7 @@ public abstract class MixinLevelRendererVanilla {
 
         if (shaderInstance.COLOR_MODULATOR != null) {
             shaderInstance.COLOR_MODULATOR.set(RenderSystem.getShaderColor());
+            overrideData.ifPresent(override -> shaderInstance.COLOR_MODULATOR.set(override.getColor()));
         }
 
         if (shaderInstance.FOG_START != null) {
